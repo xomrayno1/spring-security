@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: security
+#  security: # Enable security with default user and password or inmemory UserDetailsService
+#    user:
+#      name: admin
+#      password: admin
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.xml
+  datasource:
+    url:  ${CONFIG_SERVER_DB_URL:jdbc:mysql://localhost:3308/ezbank}?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8
+    username: ${SERVER_DB_USERNAME:root}
+    password: ${SERVER_DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    format-sql: true
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
