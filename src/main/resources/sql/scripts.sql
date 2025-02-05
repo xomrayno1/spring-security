@@ -24,10 +24,7 @@ CREATE TABLE customer (
 
 -- tamnct
 INSERT INTO customer (email, pwd, role, mobile_number, create_dt, name) 
-VALUES ('alice@example.com', '$2a$10$PwyJqGCg7bUFDtlLoqjP7eUm/Oru.q8lSBzKuYb7zV9XfCCbzeqMO', 'USER', '1234567890', '2024-02-01', 'Alice Johnson');
-
-INSERT INTO customer (email, pwd, role, mobile_number, create_dt, name) 
-VALUES ('bob@example.com', '$2a$10$PwyJqGCg7bUFDtlLoqjP7eUm/Oru.q8lSBzKuYb7zV9XfCCbzeqMO', 'ADMIN', '0987654321', '2024-02-01', 'Bob Smith');
+VALUES ('tamnct@gmail.com', '$2a$10$PwyJqGCg7bUFDtlLoqjP7eUm/Oru.q8lSBzKuYb7zV9XfCCbzeqMO', 'USER', '1234567890', '2024-02-01', 'Alice Johnson');
 
 CREATE TABLE `accounts` (
   `customer_id` int NOT NULL,

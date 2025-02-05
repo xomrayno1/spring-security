@@ -6,3 +6,13 @@ spring:
     name: security
   profiles:
     active: dev
+
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        security:
+#          web:
+#            FilterChainProxy: DEBUG
+      
+          

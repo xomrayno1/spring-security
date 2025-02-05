@@ -2,28 +2,39 @@ package com.app.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.model.Cards;
 import com.app.repository.CardsRepository;
 
-@RestController
-public class CardController {
-	
-    @Autowired
-    private CardsRepository cardsRepository;
+import lombok.extern.slf4j.Slf4j;
 
-    @GetMapping("/myCards")
-    public List<Cards> getCardDetails(@RequestParam int id) {
-        List<Cards> cards = cardsRepository.findByCustomerId(id);
-        if (cards != null ) {
-            return cards;
-        }else {
-            return null;
-        }
+@RestController
+@Slf4j(topic = "CardController")
+public class CardController {
+ 
+    private final CardsRepository cardsRepository;
+    
+    public CardController(CardsRepository cardsRepository) {
+		this.cardsRepository = cardsRepository;
+	}
+
+	@GetMapping("/myCards/{id}")
+    public ResponseEntity<List<Cards>> getCardDetail(@PathVariable int id) {
+		log.info(" getCardDetails  [] ");
+        return ResponseEntity.ok(
+        		cardsRepository.findByCustomerId(id)
+        		);
+    }
+	
+	@GetMapping("/myCards")
+    public ResponseEntity<List<Cards>> getCardDetails() {
+		log.info(" getCardDetails  [] ");
+		List<Cards> cards = cardsRepository.findAll();
+        return ResponseEntity.ok(cards);
     }
 
 }

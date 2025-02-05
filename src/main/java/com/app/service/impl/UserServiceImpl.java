@@ -1,4 +1,4 @@
-package com.app.service;
+package com.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,22 +7,21 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.app.model.Customer;
 import com.app.repository.CustomerRepository;
+import com.app.service.UserService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
-public class UserDetailSecurityServiceImpl implements UserDetailsService {
-	
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService{
+
 	private final CustomerRepository customerRepository;
-
-	public UserDetailSecurityServiceImpl(CustomerRepository customerRepository) {
-		this.customerRepository = customerRepository;
-	}
-
+ 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		List<Customer> customers = customerRepository.findByEmail(username);
@@ -30,8 +29,11 @@ public class UserDetailSecurityServiceImpl implements UserDetailsService {
 			throw new UsernameNotFoundException("User not found");
 		}
 		Customer customer = customers.get(0);
-		List<GrantedAuthority> authorities = new ArrayList<>();
-		authorities.add(new SimpleGrantedAuthority(customer.getRole()));
+ 
+		List<SimpleGrantedAuthority> authorities = customer.getAuthorities().stream()
+				.map(item -> new SimpleGrantedAuthority(item.getName()))
+				.toList();
+ 
 		return new User(customer.getEmail(), customer.getPwd(), authorities);
 	}
 
