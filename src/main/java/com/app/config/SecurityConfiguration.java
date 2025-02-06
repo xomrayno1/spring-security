@@ -3,19 +3,27 @@ package com.app.config;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -29,8 +37,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+@EnableMethodSecurity
+public class SecurityConfiguration {
  
 //	@Bean
 //	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -124,6 +134,11 @@ public class SecurityConfig {
 //	public PasswordEncoder passwordEncoder() { 
 //		return NoOpPasswordEncoder.getInstance(); //default, so sanh pwd mac dinh
 //	}
+
+	private static final String[] WHITE_LIST_URL = { "/api/v1/auth/**", "/unsecured/v1/unsecure-example", "/notices", "/contact", "/auth/**" };
+
+	private final UserService userService;
+	private final LogoutHandler logoutHandler;
 	
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -154,11 +169,17 @@ public class SecurityConfig {
 			.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
 			.requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT", "VIEWBALANCE")
 			.requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-			.requestMatchers("/myCards").hasAuthority("VIEWCARDS")
-			.requestMatchers("/user").authenticated()
-			.requestMatchers("/notices", "/contact", "/auth/**").permitAll())
+			.requestMatchers("/myCards/**", "/user").authenticated()
+			.requestMatchers(WHITE_LIST_URL).permitAll())
 		.formLogin(Customizer.withDefaults())
-		.httpBasic(Customizer.withDefaults());
+		.httpBasic(Customizer.withDefaults())
+        .logout(logout ->
+        		logout.logoutUrl("/api/v1/auth/logout")
+                .addLogoutHandler(logoutHandler)
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+        )
+        .exceptionHandling(customizer -> customizer.accessDeniedHandler(accessDeniedHandler()));
+		//.rememberMe();
 		return http.build();
 	}
 	
@@ -174,8 +195,6 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 	
-	private final UserService userService;
-	
 	@Bean
 	public DaoAuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
@@ -188,5 +207,16 @@ public class SecurityConfig {
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
 		return authConfig.getAuthenticationManager();
 	}
+	
+	@Bean
+	public AuthenticationEventPublisher authenticationEventPublisher
+	        (ApplicationEventPublisher applicationEventPublisher) {
+	    return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+	}
+	
+	@Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return new CustomAccessDeniedHandler();
+    }
 	
 }

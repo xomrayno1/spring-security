@@ -3,6 +3,7 @@ package com.app.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,13 +24,12 @@ public class CardController {
 	}
 
 	@GetMapping("/myCards/{id}")
-    public ResponseEntity<List<Cards>> getCardDetail(@PathVariable int id) {
+    public ResponseEntity<List<Cards>> getCardDetail(@PathVariable("id") int id) {
 		log.info(" getCardDetails  [] ");
-        return ResponseEntity.ok(
-        		cardsRepository.findByCustomerId(id)
-        		);
+        return ResponseEntity.ok(cardsRepository.findByCustomerId(id));
     }
 	
+    @PreAuthorize("hasAuthority('VIEWCARDS1')")
 	@GetMapping("/myCards")
     public ResponseEntity<List<Cards>> getCardDetails() {
 		log.info(" getCardDetails  [] ");

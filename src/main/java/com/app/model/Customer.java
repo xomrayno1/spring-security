@@ -26,6 +26,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Customer implements Serializable{
 
+	private static final long serialVersionUID = -4694055839787882677L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customer_id")
